@@ -125,7 +125,9 @@ defmodule Turnstile do
   security when running the verification, but is optional. Returns `{:ok, response}` if the
   verification succeeded, or `{:error, reason}` if the verification failed.
   """
-  def verify(%{"cf-turnstile-response" => turnstile_response}, remoteip \\ nil) do
+  def verify(params, remoteip \\ nil)
+
+  def verify(%{"cf-turnstile-response" => turnstile_response}, remoteip) do
     body = encode_body!(turnstile_response, remoteip)
     headers = [{to_charlist("accept"), to_charlist("application/json")}]
     request = {to_charlist(@verify_url), headers, to_charlist("application/json"), body}
@@ -147,6 +149,8 @@ defmodule Turnstile do
         {:error, error}
     end
   end
+
+  def verify(_params, _remoteip), do: {:error, :missing_response}
 
   defp encode_body!(response, remoteip) when is_tuple(remoteip) do
     encode_body!(response, :inet_parse.ntoa(remoteip) |> to_string())
